@@ -34,7 +34,7 @@ jobs:
           command: ls -la && npm install && ls -la
       - save_cache:
           paths:
-            - node_modules
+            - frontend/node_modules
           key: frontend-deps-{{ checksum "package-lock.json" }}
 
   build-frontend:

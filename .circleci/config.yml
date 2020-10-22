@@ -23,15 +23,16 @@ executors:
 
 jobs:
   install-frontend-deps:
+   working_directory: ~/udacity-cloud-devops-engineer-project-3/frontend
    executor: node
    steps:
       - checkout:
-          path: ~/frontend
+          path: ~/udacity-cloud-devops-engineer-project-3/frontend
       - restore_cache:
           key: frontend-deps-{{ checksum "node_modules" }}
       - run:
           name: npm install
-          working_directory: ./frontend
+          #working_directory: ./frontend
           command: ls -la && npm install && ls -la
       - save_cache:
           paths:

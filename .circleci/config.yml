@@ -32,7 +32,7 @@ jobs:
           command: ls -la && npm install
       - save_cache:
           paths:
-            - ~/node_modules
+            - ./frontend/node_modules
           key: frontend-deps-{{ checksum "node_modules" }}
 
   build-frontend:

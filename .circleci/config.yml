@@ -13,7 +13,7 @@ version: 2.1
 executors:
   node:
     docker:
-      - image: circleci/node:13.9.0
+      - image: circleci/node:13.8.0
   aws:
     docker:
       - image: amazon/aws-cli

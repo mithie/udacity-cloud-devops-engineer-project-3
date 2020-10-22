@@ -33,14 +33,14 @@ jobs:
       - save_cache:
           paths:
             - frontend/node_modules
-          key: frontend-deps-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .BuildNum }}
 
   build-frontend:
     executor: node
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps-{{ checksum "package-lock.json" }}
+          key: frontend-deps-{{ .BuildNum }}
       - run:
           name: npm run build
           working_directory: ./frontend

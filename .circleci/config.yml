@@ -23,16 +23,16 @@ executors:
 
 jobs:
   install-frontend-deps:
-    working_directory: ~/frontend
     executor: node
-    steps:
+   steps:
       - checkout
       - run:
           name: npm install
+          working_directory: ./frontend
           command: ls -la && npm install && ls -la
       - save_cache:
           paths:
-            - ./frontend/node_modules
+            - ~/frontend/node_modules
           key: frontend-deps-{{ checksum "node_modules" }}
 
   build-frontend:

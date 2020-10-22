@@ -23,7 +23,7 @@ executors:
 
 jobs:
   install-frontend-deps:
-    executor: node
+   executor: node
    steps:
       - checkout
       - run:

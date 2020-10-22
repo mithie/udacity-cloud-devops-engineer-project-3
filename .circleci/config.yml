@@ -26,8 +26,6 @@ jobs:
    executor: node
    steps:
       - checkout
-      - restore_cache:
-          key: frontend-deps-{{ checksum "package-lock.json" }}
       - run:
           name: npm install
           working_directory: ./frontend

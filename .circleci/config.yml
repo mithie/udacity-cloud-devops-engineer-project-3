@@ -27,26 +27,26 @@ jobs:
    steps:
       - checkout
       - restore_cache:
-          key: frontend-deps-{{ checksum "./node_modules" }}
+          key: frontend-deps-{{ checksum "package-lock.json" }}
       - run:
           name: npm install
           working_directory: ./frontend
           command: ls -la && npm install && ls -la
       - save_cache:
           paths:
-            - ~/package-lock.json
-          key: frontend-deps-{{ checksum "./node_modules" }}
+            - ~/node_modules
+          key: frontend-deps-{{ checksum "package-lock.json" }}
 
   build-frontend:
     executor: node
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps-{{ checksum "./node_modules" }}
+          key: frontend-deps-{{ checksum "package-lock.json" }}
       - run:
           name: npm run build
           working_directory: ./frontend
-          command: npm run build && ls dist
+          command: npm run build
 
 #  test-frontend:
 

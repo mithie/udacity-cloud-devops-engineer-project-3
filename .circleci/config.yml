@@ -23,7 +23,7 @@ executors:
 
 jobs:
   install-frontend-deps:
-    working_directory: ./frontend
+    working_directory: ~/frontend
     executor: node
     steps:
       - checkout

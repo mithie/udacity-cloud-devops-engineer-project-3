@@ -25,7 +25,8 @@ jobs:
   install-frontend-deps:
    executor: node
    steps:
-      - checkout
+      - checkout:
+          path: ~/frontend
       - restore_cache:
           key: frontend-deps-{{ checksum "node_modules" }}
       - run:

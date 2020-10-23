@@ -87,11 +87,29 @@ jobs:
           path: /tmp
       - store_artifacts:
           path: /tmp
-#  test-frontend:
 
-#  est-backend:
+  test-backend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: backend-deps
+      - run:
+          name: Install junit coverage reporter
+          working_directory: ./backend
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests with JUnit as reporter
+          working_directory: ./backend
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: /tmp
+      - store_test_results:
+          path: /tmp
+      - store_artifacts:
+          path: /tmp
 
-#  can-frontend:
+#  scan-frontend:
 
 #  scan-backend:
 
@@ -124,3 +142,6 @@ workflows:
       - test-frontend:
           requires:
             -  build-frontend
+      - test-backend:
+          requires:
+            -  build-backend

@@ -43,7 +43,7 @@ jobs:
       - save_cache:
           paths:
             - frontend/node_modules
-          key: frontend-deps-1
+          key: frontend-deps-2
 
   build-backend:
     executor: node
@@ -61,7 +61,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps-1
+          key: frontend-deps-2
       - run:
           name: npm run build
           working_directory: ./frontend
@@ -72,7 +72,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps-1
+          key: frontend-deps-2
       - run:
           name: install junit coverage reporter
           command: npm install jest-junit

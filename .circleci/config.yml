@@ -75,15 +75,16 @@ jobs:
           key: frontend-deps-2
       - run:
           name: install junit coverage reporter
+          working_directory: ./frontend
           command: npm install jest-junit
       - run:
           name: npm test --ci --runInBand --reporters=default --reporters=jest-junit
           working_directory: ./frontend
           command: npm run test
           environment:
-            JEST_JUNIT_OUTPUT_DIR: /test-results
+            JEST_JUNIT_OUTPUT_DIR: frontend/test-results
       - store_test_results:
-          path: test-results
+          path: frontend/test-results
 #  test-frontend:
 
 #  est-backend:

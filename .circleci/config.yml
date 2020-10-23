@@ -19,7 +19,7 @@ executors:
       - image: python:3.9.0-alpine
 
 jobs:
-  install-backend-deps:
+  install-backend-dependencies:
     executor: node
     steps:
       - checkout
@@ -32,7 +32,7 @@ jobs:
             - backend/node_modules
           key: backend-deps
 
-  install-frontend-deps:
+  install-frontend-dependencies:
    executor: node
    steps:
       - checkout
@@ -43,7 +43,7 @@ jobs:
       - save_cache:
           paths:
             - frontend/node_modules
-          key: frontend-deps-2
+          key: frontend-dependencies
 
   build-backend:
     executor: node
@@ -61,7 +61,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps-2
+          key: frontend-dependencies
       - run:
           name: npm run build
           working_directory: ./frontend
@@ -72,7 +72,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps-2
+          key: frontend-dependencies
       - run:
           name: Install junit coverage reporter
           working_directory: ./frontend
@@ -130,15 +130,15 @@ jobs:
 workflows:
   default:
     jobs:
-      - install-backend-deps
-      - install-frontend-deps
+      - install-backend-dependencies
+      - install-frontend-dependencies
 
       - build-backend:
           requires:
-            - install-backend-deps
+            - install-backend-dependencies
       - build-frontend:
           requires:
-            - install-frontend-deps
+            - install-frontend-dependencies
       - test-frontend:
           requires:
             -  build-frontend

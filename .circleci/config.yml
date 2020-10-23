@@ -73,11 +73,8 @@ jobs:
       - checkout
       - restore_cache:
           key: frontend-deps-1
-      #- run:
-      #    name: install oauth-sign missing dependency
-      #    working_directory: ./frontend
       - run:
-          name: npm test --ci --reporters=default --reporters=jest-junit
+          name: npm install jest-junit && npm test --ci --reporters=default --reporters=jest-junit
           working_directory: ./frontend
           command: npm run test
           environment:

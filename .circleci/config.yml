@@ -80,13 +80,13 @@ jobs:
       - run:
           name: Run tests with JUnit as reporter
           working_directory: ./frontend
-          command: mkdir -p reports/junit && npm test -- --ci --runInBand --reporters=default --reporters=jest-junit
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
+            JEST_JUNIT_OUTPUT_DIR: /tmp
       - store_test_results:
-          path: ./reports/junit/
+          path: /tmp
       - store_artifacts:
-          path: ./reports/junit
+          path: /tmp
 #  test-frontend:
 
 #  est-backend:

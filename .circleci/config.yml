@@ -80,7 +80,7 @@ jobs:
       - run:
           name: npm test --ci --runInBand --reporters=default --reporters=jest-junit
           working_directory: ./frontend
-          command: npm run test
+          command: ls -la && npm run test
           environment:
             JEST_JUNIT_OUTPUT_DIR: /tmp
       - store_test_results:

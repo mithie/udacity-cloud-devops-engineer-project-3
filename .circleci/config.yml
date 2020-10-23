@@ -67,6 +67,18 @@ jobs:
           working_directory: ./frontend
           command: npm run build
 
+  test-frontend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: frontend-deps
+      - run:
+          name: npm run test
+          working_directory: ./frontend
+          command: npm run test
+      - store_test_results:
+          path: test-results
 #  test-frontend:
 
 #  est-backend:

@@ -14,14 +14,24 @@ executors:
   node:
     docker:
       - image: circleci/node:13.8.0
-  aws:
-    docker:
-      - image: amazon/aws-cli
   python:
     docker:
       - image: python:3.9.0-alpine
 
 jobs:
+  install-backend-deps:
+    executor: node
+    steps:
+      - checkout
+      - run:
+          name: npm install
+          working_directory: ./backend
+          command: ls -la && npm install
+      - save_cache:
+          paths:
+            - backend/node_modules
+          key: backend-deps
+
   install-frontend-deps:
    executor: node
    steps:
@@ -29,11 +39,22 @@ jobs:
       - run:
           name: npm install
           working_directory: ./frontend
-          command: ls -la && npm install && ls -la
+          command: ls -la && npm install
       - save_cache:
           paths:
             - frontend/node_modules
           key: frontend-deps
+
+  build-backend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: backend-deps
+      - run:
+          name: npm run build
+          working_directory: ./backend
+          command: npm run build
 
   build-frontend:
     executor: node
@@ -71,8 +92,10 @@ jobs:
 workflows:
   default:
     jobs:
+      - install-backend-deps
       - install-frontend-deps
 
+      - build-backend
       - build-frontend:
           requires:
             - install-frontend-deps

@@ -109,9 +109,27 @@ jobs:
       - store_artifacts:
           path: /tmp
 
-#  scan-frontend:
+  scan-frontend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: frontend-dependencies
+      - run:
+          name: Check Frontend against security vulnerabilities
+          working_directory: ./frontend
+          command: npm audit --audit-level=critical
 
-#  scan-backend:
+  scan-backend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: backend-dependencies
+      - run:
+          name: Check Backend against security vulnerabilities
+          working_directory: ./backend
+          command: npm audit --audit-level=critical
 
 #  deploy-infrastructure:
 
@@ -139,9 +157,15 @@ workflows:
       - build-frontend:
           requires:
             - install-frontend-dependencies
-      - test-frontend:
-          requires:
-            -  build-frontend
       - test-backend:
           requires:
             -  build-backend
+      - test-frontend:
+          requires:
+            -  build-frontend
+      - scan-backend:
+          requires:
+            - build-backend
+      - scan-frontend:
+          requires:
+            - build-frontend

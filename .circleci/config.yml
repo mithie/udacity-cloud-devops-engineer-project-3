@@ -43,7 +43,7 @@ jobs:
       - save_cache:
           paths:
             - frontend/node_modules
-          key: frontend-deps
+          key: frontend-deps-1
 
   build-backend:
     executor: node
@@ -61,7 +61,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps
+          key: frontend-deps-1
       - run:
           name: npm run build
           working_directory: ./frontend
@@ -72,7 +72,11 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: frontend-deps
+          key: frontend-deps-1
+      - run:
+          name: install oauth-sign missing dependency
+          working_directory: ./frontend
+
       - run:
           name: npm run test
           working_directory: ./frontend

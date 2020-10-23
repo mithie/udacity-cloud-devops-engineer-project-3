@@ -77,9 +77,11 @@ jobs:
       #    name: install oauth-sign missing dependency
       #    working_directory: ./frontend
       - run:
-          name: npm run test
+          name: npm test --ci --reporters=default --reporters=jest-junit
           working_directory: ./frontend
           command: npm run test
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: /test-results
       - store_test_results:
           path: test-results
 #  test-frontend:

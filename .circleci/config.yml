@@ -114,3 +114,5 @@ workflows:
           requires:
             - install-frontend-deps
       - test-frontend
+          requires:
+            -  build-frontend

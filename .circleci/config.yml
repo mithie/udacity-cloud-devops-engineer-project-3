@@ -74,17 +74,19 @@ jobs:
       - restore_cache:
           key: frontend-deps-2
       - run:
-          name: install junit coverage reporter
+          name: Install junit coverage reporter
           working_directory: ./frontend
-          command: npm install jest-junit
+          command: npm install --save-dev jest-junit
       - run:
-          name: npm test --ci --runInBand --reporters=default --reporters=jest-junit
+          name: Run tests with JUnit as reporter
           working_directory: ./frontend
-          command: ls -la && npm run test
+          command: npm test --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: coverage
+            JEST_JUNIT_OUTPUT_DIR: ./reports/junit/
       - store_test_results:
-          path: coverage
+          path: ./reports/junit/
+      - store_artifacts:
+          path: ./reports/junit
 #  test-frontend:
 
 #  est-backend:

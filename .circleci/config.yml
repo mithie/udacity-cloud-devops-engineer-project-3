@@ -82,9 +82,9 @@ jobs:
           working_directory: ./frontend
           command: npm run test
           environment:
-            JEST_JUNIT_OUTPUT_DIR: frontend/test-results
+            JEST_JUNIT_OUTPUT_DIR: /tmp
       - store_test_results:
-          path: frontend/test-results
+          path: /tmp
 #  test-frontend:
 
 #  est-backend:

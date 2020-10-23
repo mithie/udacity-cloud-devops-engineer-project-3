@@ -95,7 +95,9 @@ workflows:
       - install-backend-deps
       - install-frontend-deps
 
-      - build-backend
+      - build-backend:
+          requires:
+            - install-backend-deps
       - build-frontend:
           requires:
             - install-frontend-deps

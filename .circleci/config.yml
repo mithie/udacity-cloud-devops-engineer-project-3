@@ -74,7 +74,10 @@ jobs:
       - restore_cache:
           key: frontend-deps-1
       - run:
-          name: npm install jest-junit && npm test --ci --reporters=default --reporters=jest-junit
+          name: install junit coverage reporter
+          command: npm install jest-junit
+      - run:
+          name: npm test --ci --runInBand --reporters=default --reporters=jest-junit
           working_directory: ./frontend
           command: npm run test
           environment:

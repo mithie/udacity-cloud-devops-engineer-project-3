@@ -73,10 +73,9 @@ jobs:
       - checkout
       - restore_cache:
           key: frontend-deps-1
-      - run:
-          name: install oauth-sign missing dependency
-          working_directory: ./frontend
-
+      #- run:
+      #    name: install oauth-sign missing dependency
+      #    working_directory: ./frontend
       - run:
           name: npm run test
           working_directory: ./frontend

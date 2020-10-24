@@ -82,11 +82,11 @@ jobs:
           working_directory: ./frontend
           command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd && ls -la /tmp
           environment:
-            JEST_JUNIT_OUTPUT_DIR: /tmp
+            JEST_JUNIT_OUTPUT_DIR: ./test_results
       - store_test_results:
-          path: /tmp
+          path: ./frontend/test_results
       - store_artifacts:
-          path: /tmp
+          path: ./frontend/test_results
 
   test-backend:
     executor: node
@@ -98,10 +98,6 @@ jobs:
           name: Install junit coverage reporter
           working_directory: ./backend
           command: npm install --save-dev jest-junit
-      #- run:
-      #    name: Create folder for storing test results
-      #    working_directory: ./backend
-      #    command: mkdir -p test_results && ls -la
       - run:
           name: Run tests with JUnit as reporter
           working_directory: ./backend

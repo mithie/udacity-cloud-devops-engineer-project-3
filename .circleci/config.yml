@@ -80,7 +80,7 @@ jobs:
       - run:
           name: Run tests with JUnit as reporter
           working_directory: ./frontend
-          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && ls -la /
           environment:
             JEST_JUNIT_OUTPUT_DIR: /tmp
       - store_test_results:
@@ -101,7 +101,7 @@ jobs:
       - run:
           name: Run tests with JUnit as reporter
           working_directory: ./backend
-          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && ls -la /
           environment:
             JEST_JUNIT_OUTPUT_DIR: /tmp
       - store_test_results:

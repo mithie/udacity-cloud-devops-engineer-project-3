@@ -98,10 +98,10 @@ jobs:
           name: Install junit coverage reporter
           working_directory: ./backend
           command: npm install --save-dev jest-junit
-      - run:
-          name: Create folder for storing test results
-          working_directory: ./backend
-          command: mkdir -p test_results && ls -la
+      #- run:
+      #    name: Create folder for storing test results
+      #    working_directory: ./backend
+      #    command: mkdir -p test_results && ls -la
       - run:
           name: Run tests with JUnit as reporter
           working_directory: ./backend
@@ -109,9 +109,9 @@ jobs:
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./test_results
       - store_test_results:
-          path: ./test_results
+          path: ./backend/test_results
       - store_artifacts:
-          path: ./test_results
+          path: ./backend/test_results
 
   scan-frontend:
     executor: node

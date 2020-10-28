@@ -58,7 +58,7 @@ jobs:
             aws cloudformation create-stack \
               --stack-name ec2-instance \
               --template-body file://backend.yml \
-              --parameters ParameterKey=ID,ParameterValue=backend \
+              --parameters ParameterKey=ID,ParameterValue=udapeople \
               --region=${AWS_DEFAULT_REGION}
 
 #  configure-infrastructure:

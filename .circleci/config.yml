@@ -17,121 +17,49 @@ executors:
   python:
     docker:
       - image: python:3.9.0-alpine
+  aws:
+    docker:
+      - image: amazon/aws-cli
 
 jobs:
-  install-backend-dependencies:
-    executor: node
+  # create-ansible-inventory:
+  #   executor: node
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: create default inventory file
+  #         working_directory: ./.circleci/ansible
+  #         command: echo [all] > inventory
+  #     - run:
+  #       name: append ec2 instances to inventory
+  #       working_directory: ./.circleci/ansible
+  #       command: |
+  #         <<-EOT
+  #           aws ec2 describe-instances \
+  #           --query 'Reservations[*].Instances[*].PublicIpAddress' \
+  #           --filters "Name=tag:project,Values=udacity" \
+  #           --output text >> inventory \
+  #           && cat inventory
+  #         EOT
+  #     - save_cache:
+  #         paths:
+  #           - .circleci/ansible
+  #         key: ansible-content
+
+
+  deploy-infrastructure:
+    executor: aws
     steps:
       - checkout
       - run:
-          name: npm install
-          working_directory: ./backend
-          command: ls -la && npm install
-      - save_cache:
-          paths:
-            - backend/node_modules
-          key: backend-deps
-
-  install-frontend-dependencies:
-   executor: node
-   steps:
-      - checkout
-      - run:
-          name: npm install
-          working_directory: ./frontend
-          command: ls -la && npm install
-      - save_cache:
-          paths:
-            - frontend/node_modules
-          key: frontend-dependencies
-
-  build-backend:
-    executor: node
-    steps:
-      - checkout
-      - restore_cache:
-          key: backend-deps
-      - run:
-          name: npm run build
-          working_directory: ./backend
-          command: npm run build
-
-  build-frontend:
-    executor: node
-    steps:
-      - checkout
-      - restore_cache:
-          key: frontend-dependencies
-      - run:
-          name: npm run build
-          working_directory: ./frontend
-          command: npm run build
-
-  test-frontend:
-    executor: node
-    steps:
-      - checkout
-      - restore_cache:
-          key: frontend-dependencies
-      - run:
-          name: Install junit coverage reporter
-          working_directory: ./frontend
-          command: npm install --save-dev jest-junit
-      - run:
-          name: Run tests with JUnit as reporter
-          working_directory: ./frontend
-          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd && ls -la /tmp
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: ./test_results
-      - store_test_results:
-          path: ./frontend/test_results
-      - store_artifacts:
-          path: ./frontend/test_results
-
-  test-backend:
-    executor: node
-    steps:
-      - checkout
-      - restore_cache:
-          key: backend-deps
-      - run:
-          name: Install junit coverage reporter
-          working_directory: ./backend
-          command: npm install --save-dev jest-junit
-      - run:
-          name: Run tests with JUnit as reporter
-          working_directory: ./backend
-          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: ./test_results
-      - store_test_results:
-          path: ./backend/test_results
-      - store_artifacts:
-          path: ./backend/test_results
-
-  scan-frontend:
-    executor: node
-    steps:
-      - checkout
-      - restore_cache:
-          key: frontend-dependencies
-      - run:
-          name: Check Frontend against security vulnerabilities
-          working_directory: ./frontend
-          command: npm audit --audit-level=critical
-
-  scan-backend:
-    executor: node
-    steps:
-      - checkout
-      - restore_cache:
-          key: backend-dependencies
-      - run:
-          name: Check Backend against security vulnerabilities
-          working_directory: ./backend
-          command: npm audit fix --audit-level=critical --force
-
-#  deploy-infrastructure:
+          name: Deploy EC2 instance on AWS with aws cli
+          working_directory: ./.circleci/files
+          command: |
+            aws cloudformation create-stack \
+              --stack-name ec2-instance \
+              --template-body file://backend.yml \
+              --parameters ParameterKey=ID,ParameterValue=backend \
+              --region=${AWS_DEFAULT_REGION}
 
 #  configure-infrastructure:
 
@@ -148,24 +76,4 @@ jobs:
 workflows:
   default:
     jobs:
-      - install-backend-dependencies
-      - install-frontend-dependencies
-
-      - build-backend:
-          requires:
-            - install-backend-dependencies
-      - build-frontend:
-          requires:
-            - install-frontend-dependencies
-      - test-backend:
-          requires:
-            -  build-backend
-      - test-frontend:
-          requires:
-            -  build-frontend
-      - scan-backend:
-          requires:
-            - build-backend
-      - scan-frontend:
-          requires:
-            - build-frontend
+      - deploy-infrastructure

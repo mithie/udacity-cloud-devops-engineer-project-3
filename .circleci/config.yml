@@ -47,58 +47,58 @@ jobs:
   #         key: ansible-content
 
 
-  deploy-infrastructure:
-    executor: aws
-    steps:
-      - checkout
-      - run:
-          name: Deploy EC2 instance on AWS with aws cli
-          working_directory: ./.circleci
-          command: |
-            cd files && \
-            aws cloudformation deploy \
-              --stack-name udapeople-ec2-instance \
-              --template-file backend.yml \
-              --parameter-overrides ID="udapeople" \
-              --tags project=udapeople
-      - run:
-          name: Save EC2 IP address in ansible inventory file
-          working_directory: ./.circleci
-          command: |
-            cd ansible && \
-            aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople" \
-              --output text >> inventory && \
-            cat inventory
-      - save_cache:
-          paths:
-            - .circleci/ansible
-          key: ansible-dependencies
+  # deploy-infrastructure:
+  #   executor: aws
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Deploy EC2 instance on AWS with aws cli
+  #         working_directory: ./.circleci
+  #         command: |
+  #           cd files && \
+  #           aws cloudformation deploy \
+  #             --stack-name udapeople-ec2-instance \
+  #             --template-file backend.yml \
+  #             --parameter-overrides ID="udapeople" \
+  #             --tags project=udapeople
+  #     - run:
+  #         name: Save EC2 IP address in ansible inventory file
+  #         working_directory: ./.circleci
+  #         command: |
+  #           cd ansible && \
+  #           aws ec2 describe-instances \
+  #             --query 'Reservations[*].Instances[*].PublicIpAddress' \
+  #             --filters "Name=tag:project,Values=udapeople" \
+  #             --output text >> inventory && \
+  #           cat inventory
+  #     - save_cache:
+  #         paths:
+  #           - .circleci/ansible
+  #         key: ansible-dependencies
 
 
-  configure-infrastructure:
-    executor: python
-    steps:
-      - checkout
-      - restore_cache:
-          key: ansible-dependencies
-      - add_ssh_keys:
-          fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
-      - run:
-          name: Install dependencies
-          working_directory: ./.circleci/ansible
-          command: |
-            apk add --update ansible
-            ansible --version
-      - run:
-          name: Configure server
-          working_directory: ./.circleci/ansible
-          command: |
-            pwd && \
-            ls -la && \
-            cat inventory && \
-            ansible-playbook -i inventory deploy-server.yaml
+  # configure-infrastructure:
+  #   executor: python
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         key: ansible-dependencies
+  #     - add_ssh_keys:
+  #         fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
+  #     - run:
+  #         name: Install dependencies
+  #         working_directory: ./.circleci/ansible
+  #         command: |
+  #           apk add --update ansible
+  #           ansible --version
+  #     - run:
+  #         name: Configure server
+  #         working_directory: ./.circleci/ansible
+  #         command: |
+  #           pwd && \
+  #           ls -la && \
+  #           cat inventory && \
+  #           ansible-playbook -i inventory deploy-server.yaml
 
 #  run-migrations:
 
@@ -107,6 +107,20 @@ jobs:
 #  deploy-backend:
 
 #  smoke-test:
+smoke_test:
+  executor: python
+  steps:
+    - run: apk add --update curl
+    - run:
+        name: smoke test.
+        command: |
+          URL="https://google.com/"
+          if curl -s --head ${URL} # test if google.com exists
+          then
+            return 0
+          else
+            return 1
+          fi
 
 #  cloudfront-update:
 

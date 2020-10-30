@@ -55,10 +55,10 @@ jobs:
           name: Deploy EC2 instance on AWS with aws cli
           working_directory: ./.circleci/files
           command: |
-            aws cloudformation create-stack \
+            aws cloudformation deploy \
               --stack-name udapeople-ec2-instance \
               --template-file file://backend.yml \
-              --parameter-overrides ID="udapeople"
+              --parameter-overrides ID="udapeople" \
               --tags project=udapeople
       - run:
           name: Save EC2 IP address in ansible inventory file

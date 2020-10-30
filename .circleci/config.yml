@@ -90,6 +90,7 @@ jobs:
           working_directory: ./.circleci/ansible
           command: |
             apk add --update ansible
+            ansible --version
       - run:
           name: Configure server
           working_directory: ./.circleci/ansible

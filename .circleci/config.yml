@@ -172,7 +172,7 @@ jobs:
               --output text >> inventory && \
             cat inventory
       - destroy_environment
-        when: on_fail
+          when: on_fail
       - save_cache:
           paths:
             - .circleci/ansible
@@ -202,7 +202,7 @@ jobs:
             cat inventory && \
             ansible-playbook -i inventory deploy-server.yaml
       - destroy_environment
-        when: on_fail
+          when: on_fail
 
 #  run-migrations:
 

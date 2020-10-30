@@ -2,14 +2,18 @@ version: 2.1
 
 ### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
 
-# commands:
-#   destroy-environment:
-#     description: Destroy backend and frontend cloudformation stacks given a workflow ID.
-#     ...
+commands:
+  destroy_environment:
+    steps:
+      - run:
+          name: Destroy environment
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID}
 
 #   revert-migration:
 #     description: Revert the last migration if successfully run in the current workflow.
 #     ...
+
 executors:
   node:
     docker:
@@ -22,59 +26,157 @@ executors:
       - image: amazon/aws-cli
 
 jobs:
-  # create-ansible-inventory:
-  #   executor: node
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: create default inventory file
-  #         working_directory: ./.circleci/ansible
-  #         command: echo [all] > inventory
-  #     - run:
-  #       name: append ec2 instances to inventory
-  #       working_directory: ./.circleci/ansible
-  #       command: |
-  #         <<-EOT
-  #           aws ec2 describe-instances \
-  #           --query 'Reservations[*].Instances[*].PublicIpAddress' \
-  #           --filters "Name=tag:project,Values=udacity" \
-  #           --output text >> inventory \
-  #           && cat inventory
-  #         EOT
-  #     - save_cache:
-  #         paths:
-  #           - .circleci/ansible
-  #         key: ansible-content
+
+  install-backend-dependencies:
+    executor: node
+    steps:
+      - checkout
+      - run:
+          name: npm install
+          working_directory: ./backend
+          command: ls -la && npm install
+      - save_cache:
+          paths:
+            - backend/node_modules
+          key: backend-deps
 
 
-  # deploy-infrastructure:
-  #   executor: aws
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Deploy EC2 instance on AWS with aws cli
-  #         working_directory: ./.circleci
-  #         command: |
-  #           cd files && \
-  #           aws cloudformation deploy \
-  #             --stack-name udapeople-ec2-instance \
-  #             --template-file backend.yml \
-  #             --parameter-overrides ID="udapeople" \
-  #             --tags project=udapeople
-  #     - run:
-  #         name: Save EC2 IP address in ansible inventory file
-  #         working_directory: ./.circleci
-  #         command: |
-  #           cd ansible && \
-  #           aws ec2 describe-instances \
-  #             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-  #             --filters "Name=tag:project,Values=udapeople" \
-  #             --output text >> inventory && \
-  #           cat inventory
-  #     - save_cache:
-  #         paths:
-  #           - .circleci/ansible
-  #         key: ansible-dependencies
+  install-frontend-dependencies:
+   executor: node
+   steps:
+      - checkout
+      - run:
+          name: npm install
+          working_directory: ./frontend
+          command: ls -la && npm install
+      - save_cache:
+          paths:
+            - frontend/node_modules
+          key: frontend-dependencies
+
+
+  build-backend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: backend-deps
+      - run:
+          name: npm run build
+          working_directory: ./backend
+          command: npm run build
+
+
+  build-frontend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: frontend-dependencies
+      - run:
+          name: npm run build
+          working_directory: ./frontend
+          command: npm run build
+
+
+  test-frontend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: frontend-dependencies
+      - run:
+          name: Install junit coverage reporter
+          working_directory: ./frontend
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests with JUnit as reporter
+          working_directory: ./frontend
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd && ls -la /tmp
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test_results
+      - store_test_results:
+          path: ./frontend/test_results
+      - store_artifacts:
+          path: ./frontend/test_results
+
+
+  test-backend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: backend-deps
+      - run:
+          name: Install junit coverage reporter
+          working_directory: ./backend
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests with JUnit as reporter
+          working_directory: ./backend
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test_results
+      - store_test_results:
+          path: ./backend/test_results
+      - store_artifacts:
+          path: ./backend/test_results
+
+
+  scan-frontend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: frontend-dependencies
+      - run:
+          name: Check Frontend against security vulnerabilities
+          working_directory: ./frontend
+          command: npm audit --audit-level=critical
+
+
+  scan-backend:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: backend-dependencies
+      - run:
+          name: Check Backend against security vulnerabilities
+          working_directory: ./backend
+          command: npm audit fix --audit-level=critical --force
+
+
+  deploy-infrastructure:
+    executor: aws
+    steps:
+      - checkout
+      - run:
+          name: Deploy EC2 instance on AWS with aws cli
+          working_directory: ./.circleci
+          command: |
+            cd files && \
+            aws cloudformation deploy \
+              --stack-name udapeople-${CIRCLE_WORKFLOW_ID} \
+              --template-file backend.yml \
+              --parameter-overrides ID="udapeople" \
+              --tags project=udapeople
+      - run:
+          name: Save EC2 IP address in ansible inventory file
+          working_directory: ./.circleci
+          command: |
+            cd ansible && \
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=udapeople" \
+              --output text >> inventory && \
+            cat inventory
+      - destroy_environment
+        when: on_fail
+      - save_cache:
+          paths:
+            - .circleci/ansible
+          key: ansible-dependencies
 
 
   configure-infrastructure:
@@ -99,6 +201,8 @@ jobs:
             ls -la && \
             cat inventory && \
             ansible-playbook -i inventory deploy-server.yaml
+      - destroy_environment
+        when: on_fail
 
 #  run-migrations:
 
@@ -106,7 +210,6 @@ jobs:
 
 #  deploy-backend:
 
-#  smoke-test:
   smoke_test:
     executor: python
     steps:
@@ -127,12 +230,11 @@ jobs:
 workflows:
   default:
     jobs:
-      - smoke_test
-      # - deploy-infrastructure:
-      #   filters:
-      #     branches:
-      #       only:
-      #         - master
-      # - configure-infrastructure:
-      #     requires:
-      #       - deploy-infrastructure
+      - deploy-infrastructure:
+        filters:
+          branches:
+            only:
+              - master
+      - configure-infrastructure:
+          requires:
+            - deploy-infrastructure

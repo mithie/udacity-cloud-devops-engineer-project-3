@@ -204,9 +204,9 @@ jobs:
           name: Configure server
           working_directory: ./.circleci/ansible
           command: |
-            pwd && \
-            ls -la && \
-            cat inventory && \
+            pwd &&
+            ls -la
+            cat inventory
             ansible-playbook -i inventory deploy-server.yaml
       - destroy_environment:
           when: on_fail

@@ -60,8 +60,32 @@ jobs:
               --template-body file://backend.yml \
               --parameters ParameterKey=ID,ParameterValue=udapeople \
               --region=${AWS_DEFAULT_REGION}
+      - run:
+          name: Save EC2 IP address in ansible inventory file
+          working_directory: ./.circleci/ansible
+          command: |
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=udacity" \
+              --output text >> inventory \
+              && cat inventory
 
-#  configure-infrastructure:
+
+  configure-infrastructure:
+    executor: python
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          working_directory: ./.circleci/ansible
+          command: |
+            ansible-playbook -i inventory deploy-server.yml
 
 #  run-migrations:
 
@@ -77,3 +101,6 @@ workflows:
   default:
     jobs:
       - deploy-infrastructure
+      - configure-infrastructure
+        requires:
+          - deploy-infrastructure

@@ -1,0 +1,8 @@
+---
+- name: Setting up a demo web server on an EC2 instance
+  hosts: all
+  user: ubuntu
+  roles:
+    - deploy
+  vars:
+    - ansible_python_interpreter: /usr/bin/python3

@@ -57,7 +57,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --stack-name udapeople-ec2-instance \
-              --template-file file://backend.yml \
+              --template-file backend.yml \
               --parameter-overrides ID="udapeople" \
               --tags project=udapeople
       - run:

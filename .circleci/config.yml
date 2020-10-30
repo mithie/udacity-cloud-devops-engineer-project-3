@@ -77,28 +77,28 @@ jobs:
   #         key: ansible-dependencies
 
 
-  # configure-infrastructure:
-  #   executor: python
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         key: ansible-dependencies
-  #     - add_ssh_keys:
-  #         fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
-  #     - run:
-  #         name: Install dependencies
-  #         working_directory: ./.circleci/ansible
-  #         command: |
-  #           apk add --update ansible
-  #           ansible --version
-  #     - run:
-  #         name: Configure server
-  #         working_directory: ./.circleci/ansible
-  #         command: |
-  #           pwd && \
-  #           ls -la && \
-  #           cat inventory && \
-  #           ansible-playbook -i inventory deploy-server.yaml
+  configure-infrastructure:
+    executor: python
+    steps:
+      - checkout
+      - restore_cache:
+          key: ansible-dependencies
+      - add_ssh_keys:
+          fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
+      - run:
+          name: Install dependencies
+          working_directory: ./.circleci/ansible
+          command: |
+            apk add --update ansible
+            ansible --version
+      - run:
+          name: Configure server
+          working_directory: ./.circleci/ansible
+          command: |
+            pwd && \
+            ls -la && \
+            cat inventory && \
+            ansible-playbook -i inventory deploy-server.yaml
 
 #  run-migrations:
 
@@ -107,20 +107,20 @@ jobs:
 #  deploy-backend:
 
 #  smoke-test:
-smoke_test:
-  executor: python
-  steps:
-    - run: apk add --update curl
-    - run:
-        name: smoke test.
-        command: |
-          URL="https://google.com/"
-          if curl -s --head ${URL} # test if google.com exists
-          then
-            return 0
-          else
-            return 1
-          fi
+  smoke_test:
+    executor: python
+    steps:
+      - run: apk add --update curl
+      - run:
+          name: smoke test.
+          command: |
+            URL="https://google.com/"
+            if curl -s --head ${URL} # test if google.com exists
+            then
+              return 0
+            else
+              return 1
+            fi
 
 #  cloudfront-update:
 

@@ -54,13 +54,12 @@ jobs:
       - run:
           name: Deploy EC2 instance on AWS with aws cli
           working_directory: ./.circleci/files
-          no_output_timeout: 3m
           command: |
             aws cloudformation create-stack \
-              --stack-name ec2-instance \
-              --template-body file://backend.yml \
-              --parameters ParameterKey=ID,ParameterValue=udapeople \
-              --region=${AWS_DEFAULT_REGION}
+              --stack-name udapeople-ec2-instance \
+              --template-file file://backend.yml \
+              --parameter-overrides ID="udapeople"
+              --tags project=udapeople
       - run:
           name: Save EC2 IP address in ansible inventory file
           working_directory: ./.circleci/ansible

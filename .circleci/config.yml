@@ -54,6 +54,7 @@ jobs:
       - run:
           name: Deploy EC2 instance on AWS with aws cli
           working_directory: ./.circleci/files
+          no_output_timeout: 3m
           command: |
             aws cloudformation create-stack \
               --stack-name ec2-instance \
@@ -106,7 +107,11 @@ jobs:
 workflows:
   default:
     jobs:
-      - deploy-infrastructure
+      - deploy-infrastructure:
+        filters:
+          branches:
+            only:
+              - master
       - configure-infrastructure:
           requires:
             - deploy-infrastructure

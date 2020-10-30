@@ -127,11 +127,12 @@ smoke_test:
 workflows:
   default:
     jobs:
-      - deploy-infrastructure:
-        filters:
-          branches:
-            only:
-              - master
-      - configure-infrastructure:
-          requires:
-            - deploy-infrastructure
+      - smoke_test
+      # - deploy-infrastructure:
+      #   filters:
+      #     branches:
+      #       only:
+      #         - master
+      # - configure-infrastructure:
+      #     requires:
+      #       - deploy-infrastructure

@@ -69,12 +69,18 @@ jobs:
               --filters "Name=tag:project,Values=udacity" \
               --output text >> inventory \
               && cat inventory
+      - save_cache:
+          paths:
+            - .circleci/ansible
+          key: ansible-deps
 
 
   configure-infrastructure:
     executor: python
     steps:
       - checkout
+      - restore_cache:
+          key: ansible-deps
       - add_ssh_keys:
           fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
       - run:
@@ -85,7 +91,7 @@ jobs:
           name: Configure server
           working_directory: ./.circleci/ansible
           command: |
-            ansible-playbook -i inventory deploy-server.yml
+            ansible-playbook -i inventory deploy-server.yaml
 
 #  run-migrations:
 

@@ -74,7 +74,7 @@ jobs:
       - save_cache:
           paths:
             - .circleci/ansible
-          key: ansible-deps
+          key: ansible-dependencies
 
 
   configure-infrastructure:
@@ -82,17 +82,20 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: ansible-deps
+          key: ansible-dependencies
       - add_ssh_keys:
           fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
       - run:
           name: Install dependencies
+          working_directory: ./.circleci/ansible
           command: |
             apk add --update ansible
       - run:
           name: Configure server
           working_directory: ./.circleci/ansible
           command: |
+            pwd && \
+            ls -la && \
             ansible-playbook -i inventory deploy-server.yaml
 
 #  run-migrations:

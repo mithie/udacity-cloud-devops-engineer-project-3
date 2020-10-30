@@ -6,9 +6,9 @@ commands:
   destroy_environment:
     steps:
       - run:
-        name: Destroy environment
-        command: |
-          aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID}
+          name: Destroy environment
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-${CIRCLE_WORKFLOW_ID}
 
 #   revert-migration:
 #     description: Revert the last migration if successfully run in the current workflow.

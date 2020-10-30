@@ -171,7 +171,7 @@ jobs:
               --filters "Name=tag:project,Values=udapeople" \
               --output text >> inventory && \
             cat inventory
-      - destroy_environment
+      - destroy_environment:
           when: on_fail
       - save_cache:
           paths:
@@ -201,7 +201,7 @@ jobs:
             ls -la && \
             cat inventory && \
             ansible-playbook -i inventory deploy-server.yaml
-      - destroy_environment
+      - destroy_environment:
           when: on_fail
 
 #  run-migrations:

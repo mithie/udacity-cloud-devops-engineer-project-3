@@ -53,8 +53,9 @@ jobs:
       - checkout
       - run:
           name: Deploy EC2 instance on AWS with aws cli
-          working_directory: ./.circleci/files
+          working_directory: ./.circleci
           command: |
+            cd files && \
             aws cloudformation deploy \
               --stack-name udapeople-ec2-instance \
               --template-file backend.yml \
@@ -62,13 +63,14 @@ jobs:
               --tags project=udapeople
       - run:
           name: Save EC2 IP address in ansible inventory file
-          working_directory: ./.circleci/ansible
+          working_directory: ./.circleci
           command: |
+            cd ansible && \
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:project,Values=udacity" \
-              --output text >> inventory \
-              && cat inventory
+              --output text >> inventory && \
+            cat inventory
       - save_cache:
           paths:
             - .circleci/ansible

@@ -96,6 +96,7 @@ jobs:
           command: |
             pwd && \
             ls -la && \
+            cat inventory && \
             ansible-playbook -i inventory deploy-server.yaml
 
 #  run-migrations:

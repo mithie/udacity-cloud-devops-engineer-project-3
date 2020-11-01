@@ -238,7 +238,11 @@ jobs:
             --template-file bucket.yaml \
             --stack-name "udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run: aws s3 sync ./website-content/index.html s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
+      - run:
+          name: Upload new Website Content
+          working_directory: ./.circleci/files/website-content
+          command: |
+            aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
 
   get_last_deployment_id:
     executor: aws

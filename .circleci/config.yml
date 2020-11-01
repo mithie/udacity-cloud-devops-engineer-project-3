@@ -247,7 +247,7 @@ jobs:
           name: Retrieve latest PipelineID from cloud formation and store it in memstash for later use
           working_directory: ./.circleci/files
           command: |
-            PipelineID = $(aws cloudformation \
+            PipelineID=$(aws cloudformation \
             list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
             --no-paginate --output text)
             curl -H "Content-Type: text/plain" -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request PUT --data "$PipelineID" https://api.memstash.io/values/PipelineID

@@ -236,7 +236,7 @@ jobs:
           command: |
             aws cloudformation deploy \
             --template-file bucket.yaml \
-            --stack-name "${CIRCLE_WORKFLOW_ID:0:7}" \
+            --stack-name "udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run: aws s3 sync ./website-content/index.html s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
 
@@ -281,7 +281,7 @@ jobs:
               echo "$OldPipelineID!=$CurrentPipelineID"
 
               aws s3 rm "s3://${OldPipelineID}" --recursive
-              aws cloudformation delete-stack --stack-name "${OldPipelineID}"
+              aws cloudformation delete-stack --stack-name "udapeople-${OldPipelineID}"
             else
               echo "$OldPipelineID==$CurrentPipelineID => nothing to be done..."
             fi

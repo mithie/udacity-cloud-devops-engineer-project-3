@@ -284,11 +284,13 @@ jobs:
             then
               echo "$OldPipelineID!=$CurrentPipelineID => will delete old version"
 
-              aws cloudformation delete-stack --stack-name "udapeople-${OldPipelineID}"
               aws s3 rm "s3://${OldPipelineID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-${OldPipelineID}"
             else
               echo "$OldPipelineID==$CurrentPipelineID => nothing to be done..."
             fi
+          environment:
+            TERM: xterm-256color
 
 workflows:
   default:

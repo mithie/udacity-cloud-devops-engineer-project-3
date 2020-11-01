@@ -335,4 +335,4 @@ workflows:
             - promote_to_production
       - clean_up_old_front_end:
           requires:
-            - promote_to_production
+            - get_last_deployment_id

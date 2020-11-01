@@ -166,23 +166,32 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople-backend
       - run:
-          name: Ensure front-end infrastructure exist
+          name: Save backend IP in memstash
           command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              #--tags project=your-tag \
-              # --stack-name "your front-end stack name with workflow id" \
-              # --parameter-overrides ID="your workflow id"
-              exit 1
-      - run:
-          name: Add back-end ip to ansible inventory
-          command: |
-            # Your code here
-            exit 1
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt
+            BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=udapeople-backend" \
+              --output text)
+
+            curl -H "Content-Type: text/plain" -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request PUT --data "$BACKEND_IP" https://api.memstash.io/values/BACKEND_IP
+      # - run:
+      #     name: Ensure front-end infrastructure exist
+      #     command: |
+      #       aws cloudformation deploy \
+      #         --template-file .circleci/files/frontend.yml \
+      #         #--tags project=your-tag \
+      #         # --stack-name "your front-end stack name with workflow id" \
+      #         # --parameter-overrides ID="your workflow id"
+      #         exit 1
+      # - run:
+      #     name: Add back-end ip to ansible inventory
+      #     command: |
+      #       # Your code here
+      #       exit 1
+      # - persist_to_workspace:
+      #     root: ~/
+      #     paths:
+      #       - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
 
 

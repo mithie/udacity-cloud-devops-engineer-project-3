@@ -21,7 +21,9 @@ Resources:
       DistributionConfig:
         Origins:
           #- DomainName: !Sub "udapeople-${WorkflowID}.s3.amazonaws.com"
-          - DomainName: !Sub "${PipelineID}.s3.amazonaws.com"
+          - DomainName: !Sub
+              - "${PipelineID}.s3.amazonaws.com"
+              - { ID: !Select [0, !Split [ "-", !Ref PipelineID] ] }
             Id: webpage
             S3OriginConfig:
               OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"

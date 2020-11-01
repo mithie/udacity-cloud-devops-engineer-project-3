@@ -164,7 +164,7 @@ jobs:
               --template-file backend.yaml \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=your-tag
+              --tags project=udapeople-backed
       - run:
           name: Ensure front-end infrastructure exist
           command: |

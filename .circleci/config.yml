@@ -157,51 +157,85 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Deploy EC2 instance on AWS with aws cli
-          working_directory: ./.circleci/files
+          name: Deploy backend infrastructure
           command: |
             aws cloudformation deploy \
-              --stack-name udapeople-${CIRCLE_WORKFLOW_ID} \
-              --template-file backend.yml \
-              --parameter-overrides ID="udapeople" \
-              --tags project=udapeople
-      - destroy_environment:
-          when: on_fail
+              --template-file .circleci/files/backend.yaml \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+              --tags project=your-tag \
+              exit 1
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              #--tags project=your-tag \
+              # --stack-name "your front-end stack name with workflow id" \
+              # --parameter-overrides ID="your workflow id"
+              exit 1
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            # Your code here
+            exit 1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure
 
 
-  configure-infrastructure:
-    executor: python
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
-      - run:
-          name: Install dependencies
-          working_directory: ./.circleci/ansible
-          command: |
-            apk add --update ansible
-            ansible --version
-            pip install awscli
-            aws --version
-      - run:
-          name: Save EC2 IP address in ansible inventory file
-          working_directory: ./.circleci/ansible
-          command: |
-            aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople" \
-              --output text >> inventory
-            cat inventory
-      - run:
-          name: Configure server
-          working_directory: ./.circleci/ansible
-          command: |
-            pwd &&
-            ls -la
-            cat inventory
-            ansible-playbook -i inventory deploy-server.yaml
-      - destroy_environment:
-          when: on_fail
+  # deploy-infrastructure:
+  #   executor: aws
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Deploy EC2 instance on AWS with aws cli
+  #         working_directory: ./.circleci/files
+  #         command: |
+  #           aws cloudformation deploy \
+  #             --stack-name udapeople-${CIRCLE_WORKFLOW_ID} \
+  #             --template-file backend.yml \
+  #             --parameter-overrides ID="udapeople" \
+  #             --tags project=udapeople
+  #     - destroy_environment:
+  #         when: on_fail
+
+
+  # configure-infrastructure:
+  #   executor: python
+  #   steps:
+  #     - checkout
+  #     - add_ssh_keys:
+  #         fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
+  #     - run:
+  #         name: Install dependencies
+  #         working_directory: ./.circleci/ansible
+  #         command: |
+  #           apk add --update ansible
+  #           ansible --version
+  #           pip install awscli
+  #           aws --version
+  #     - run:
+  #         name: Save EC2 IP address in ansible inventory file
+  #         working_directory: ./.circleci/ansible
+  #         command: |
+  #           aws ec2 describe-instances \
+  #             --query 'Reservations[*].Instances[*].PublicIpAddress' \
+  #             --filters "Name=tag:project,Values=udapeople" \
+  #             --output text >> inventory
+  #           cat inventory
+  #     - run:
+  #         name: Configure server
+  #         working_directory: ./.circleci/ansible
+  #         command: |
+  #           pwd &&
+  #           ls -la
+  #           cat inventory
+  #           ansible-playbook -i inventory deploy-server.yaml
+  #     - destroy_environment:
+  #         when: on_fail
 
 #  run-migrations:
 
@@ -267,8 +301,9 @@ jobs:
           command: |
             aws cloudformation deploy \
             --template-file cloudfront.yaml \
-            --stack-name production-distro \
-            --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID:0:7}"
+            --stack-name udapeople-cloudfront-production \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+            --tags project=udapeople
 
   clean_up_old_front_end:
     executor: aws
@@ -319,22 +354,22 @@ workflows:
       #       - build-frontend
 
       ## INFRASTRUCTURE
-      # - deploy-infrastructure:
-      #     filters:
-      #       branches:
-      #         only:
-      #           - master
+      - deploy-infrastructure:
+          filters:
+            branches:
+              only:
+                - master
       # - configure-infrastructure:
       #     requires:
       #       - deploy-infrastructure
 
-      - create_and_deploy_front_end
-      - get_last_deployment_id:
-          requires:
-            - create_and_deploy_front_end
-      - promote_to_production:
-          requires:
-            - get_last_deployment_id
-      - clean_up_old_front_end:
-          requires:
-            - promote_to_production
+      # - create_and_deploy_front_end
+      # - get_last_deployment_id:
+      #     requires:
+      #       - create_and_deploy_front_end
+      # - promote_to_production:
+      #     requires:
+      #       - get_last_deployment_id
+      # - clean_up_old_front_end:
+      #     requires:
+      #       - promote_to_production

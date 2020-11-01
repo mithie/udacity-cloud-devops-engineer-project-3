@@ -238,6 +238,7 @@ jobs:
             --template-file bucket.yaml \
             --stack-name "${CIRCLE_WORKFLOW_ID:0:7}" \
             --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID:0:7}"
+      - run: aws s3 sync ./website-content/index.html s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
 
   get_last_deployment_id:
     executor: aws
@@ -275,7 +276,7 @@ jobs:
             OldPipelineID=$(curl -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request GET https://api.memstash.io/values/PipelineID)
             CurrentPipelineID=${CIRCLE_WORKFLOW_ID:0:7}
 
-            if [[ "_$CurrentPipelineID" != "_$OldPipelineID" ]]
+            if [[ "$CurrentPipelineID" != "$OldPipelineID" ]]
             then
               echo "$OldPipelineID!=$CurrentPipelineID"
 

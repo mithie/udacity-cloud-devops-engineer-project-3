@@ -12,7 +12,7 @@ commands:
         type: string
     steps:
       - run:
-          name: Destroy udapeople backend stack
+          name: Destroy udapeople aws infrastructure
           command: |
             aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.id >>
           when: << parameters.when >>
@@ -21,7 +21,7 @@ commands:
           command: |
             aws s3 rm s3://<< parameters.id >> --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
-        when: << parameters.when >>
+          when: << parameters.when >>
 
 #   revert-migration:
 #     description: Revert the last migration if successfully run in the current workflow.

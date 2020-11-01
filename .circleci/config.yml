@@ -242,7 +242,7 @@ jobs:
           name: Upload new Website Content
           working_directory: ./.circleci/files/website-content
           command: |
-            aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}" --delete
+            aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}"
 
   get_last_deployment_id:
     executor: aws

@@ -322,8 +322,12 @@ workflows:
       #       - deploy-infrastructure
 
       - create_and_deploy_front_end
-      - get_last_deployment_id
       - promote_to_production:
           requires:
             - create_and_deploy_front_end
-      - clean_up_old_front_end
+      - get_last_deployment_id:
+          requires:
+            - promote_to_production
+      - clean_up_old_front_end:
+          requires:
+            - promote_to_production

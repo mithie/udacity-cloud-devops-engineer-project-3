@@ -158,9 +158,8 @@ jobs:
       - checkout
       - run:
           name: Deploy EC2 instance on AWS with aws cli
-          working_directory: ./.circleci
+          working_directory: ./.circleci/files
           command: |
-            cd files
             aws cloudformation deploy \
               --stack-name udapeople-${CIRCLE_WORKFLOW_ID} \
               --template-file backend.yml \
@@ -227,14 +226,104 @@ jobs:
 
 #  cloudfront-update:
 
+  create_and_deploy_front_end:
+    executor: aws
+    steps:
+      - checkout
+      - run:
+          name: Create and deploy S3 frontend
+          working_directory: ./.circleci/files
+          command: |
+            aws cloudformation deploy \
+            --template-file bucket.yaml \
+            --stack-name "${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID:0:7}"
+
+  get_last_deployment_id:
+    executor: aws
+    steps:
+      - checkout
+      - run:
+          name: Retrieve latest PipelineID from cloud formation and store it in memstash for later use
+          working_directory: ./.circleci/files
+          command: |
+            PipelineID = $(aws cloudformation \
+            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
+            --no-paginate --output text)
+            curl -H "Content-Type: text/plain" -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request PUT --data "$PipelineID" https://api.memstash.io/values/PipelineID
+
+  promote_to_production:
+    executor: aws
+    steps:
+      - checkout
+      - run:
+          name: Update frontend production environment
+          working_directory: ./.circleci/files
+          command: |
+            aws cloudformation deploy \
+            --template-file cloudfront.yaml \
+            --stack-name production-distro \
+            --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID:0:7}"
+
+  clean_up_old_front_end:
+    executor: aws
+    steps:
+      - checkout
+      - run:
+          name: Clean up old environment
+          command: |
+            OldPipelineID=$(curl -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request GET https://api.memstash.io/values/PipelineID)
+            CurrentPipelineID=${CIRCLE_WORKFLOW_ID:0:7}
+
+            if [[ "_$CurrentPipelineID" != "_$OldPipelineID" ]]
+            then
+              echo "$OldPipelineID!=$CurrentPipelineID"
+
+              aws s3 rm "s3://${OldPipelineID}" --recursive
+              aws cloudformation delete-stack --stack-name "${OldPipelineID}"
+            else
+              echo "$OldPipelineID==$CurrentPipelineID => nothing to be done..."
+            fi
+
 workflows:
   default:
     jobs:
-      - deploy-infrastructure:
-          filters:
-            branches:
-              only:
-                - master
-      - configure-infrastructure:
+      ## BUILD AND DEPLOY
+      # - install-backend-dependencies
+      # - install-frontend-dependencies
+
+      # - build-backend:
+      #     requires:
+      #       - install-backend-dependencies
+      # - build-frontend:
+      #     requires:
+      #       - install-frontend-dependencies
+      # - test-backend:
+      #     requires:
+      #       -  build-backend
+      # - test-frontend:
+      #     requires:
+      #       -  build-frontend
+      # - scan-backend:
+      #     requires:
+      #       - build-backend
+      # - scan-frontend:
+      #     requires:
+      #       - build-frontend
+
+      ## INFRASTRUCTURE
+      # - deploy-infrastructure:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+      # - configure-infrastructure:
+      #     requires:
+      #       - deploy-infrastructure
+
+      - create_and_deploy_front_end
+      - get_last_deployment_id
+      - promote_to_production:
           requires:
-            - deploy-infrastructure
+            - create_and_deploy_front_end
+      - clean_up_old_front_end

@@ -256,15 +256,18 @@ jobs:
           name: Install AWS CLI dependencies
           working_directory: /tmp
           command: |
+            sudo apt-get update && sudo apt-get install -yy less
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
       - run:
           name: Run migrations
+          working_directory: ./backend
           command: |
             npm run migrations > migration_status
       - run:
           name: Send migration results to memstash
+          working_directory: ./backend
           command: |
             grep "has been executed successfully" migration_status > dev/null 2>&1
             if [[ "_$?" == "_0" ]]

@@ -264,15 +264,13 @@ jobs:
           name: Run migrations
           working_directory: ./backend
           command: |
-            pwd
-            ls -la
             npm run migrations > migration_status
+            grep "has been executed successfully" migration_status
       - run:
           name: Send migration results to memstash
           working_directory: ./backend
           command: |
-            grep "has been executed successfully" migration_status > /dev/null 2>&1
-            if [[ "_$?" == "_0" ]]
+            if grep -q "has been executed successfully" migration_status
             then
               curl -H "Content-Type: text/plain" -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request PUT --data "success" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7}
             else

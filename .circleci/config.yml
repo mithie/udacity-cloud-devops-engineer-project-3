@@ -216,6 +216,33 @@ jobs:
           when: on_fail
 
 
+  configure-infrastructure:
+    executor: python
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install dependencies
+          working_directory: ./.circleci/ansible
+          command: |
+            apk add --update ansible
+            ansible --version
+      - run:
+          name: Configure server
+          working_directory: ./.circleci/ansible
+          command: |
+            pwd &&
+            ls -la
+            cat inventory
+            ansible-playbook -i inventory configure-server.yaml
+      - destroy_environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
+
+
   # deploy-infrastructure:
   #   executor: aws
   #   steps:
@@ -389,9 +416,9 @@ workflows:
             branches:
               only:
                 - master
-      # - configure-infrastructure:
-      #     requires:
-      #       - deploy-infrastructure
+      - configure-infrastructure:
+          requires:
+            - deploy-infrastructure
 
       # - create_and_deploy_front_end
       # - get_last_deployment_id:

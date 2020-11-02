@@ -169,6 +169,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          commdn: sudo apt-get install -y tar
+      - run:
           name: Deploy backend infrastructure
           working_directory: ./.circleci/files
           command: |

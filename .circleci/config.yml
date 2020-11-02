@@ -82,6 +82,10 @@ jobs:
           name: npm run build
           working_directory: ./backend
           command: npm run build
+      - save_cache:
+          paths:
+            - backend/dist
+          key: backend-dist-dependencies
 
 
   build-frontend:
@@ -242,59 +246,29 @@ jobs:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
-
-  # deploy-infrastructure:
-  #   executor: aws
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Deploy EC2 instance on AWS with aws cli
-  #         working_directory: ./.circleci/files
-  #         command: |
-  #           aws cloudformation deploy \
-  #             --stack-name udapeople-${CIRCLE_WORKFLOW_ID} \
-  #             --template-file backend.yml \
-  #             --parameter-overrides ID="udapeople" \
-  #             --tags project=udapeople
-  #     - destroy_environment:
-  #         when: on_fail
-
-
-  # configure-infrastructure:
-  #   executor: python
-  #   steps:
-  #     - checkout
-  #     - add_ssh_keys:
-  #         fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
-  #     - run:
-  #         name: Install dependencies
-  #         working_directory: ./.circleci/ansible
-  #         command: |
-  #           apk add --update ansible
-  #           ansible --version
-  #           pip install awscli
-  #           aws --version
-  #     - run:
-  #         name: Save EC2 IP address in ansible inventory file
-  #         working_directory: ./.circleci/ansible
-  #         command: |
-  #           aws ec2 describe-instances \
-  #             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-  #             --filters "Name=tag:project,Values=udapeople" \
-  #             --output text >> inventory
-  #           cat inventory
-  #     - run:
-  #         name: Configure server
-  #         working_directory: ./.circleci/ansible
-  #         command: |
-  #           pwd &&
-  #           ls -la
-  #           cat inventory
-  #           ansible-playbook -i inventory deploy-server.yaml
-  #     - destroy_environment:
-  #         when: on_fail
-
-#  run-migrations:
+  run-migrations:
+    executor: node
+    steps:
+      - checkout
+      - restore_cache:
+          key: backend-dist-dependencies
+      - run:
+          name: Run migrations
+          command: |
+            npm run migrations > migration_status
+      - run:
+          name: Send migration results to memstash
+          command: |
+            grep "has been executed successfully" migration_status > dev/null 2>&1
+            if [[ "_$?" == "_0" ]]
+            then
+              curl -H "Content-Type: text/plain" -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request PUT --data "success" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7}
+            else
+              curl -H "Content-Type: text/plain" -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request PUT --data "failure" https://api.memstash.io/values/DB_MIGRATION_${CIRCLE_WORKFLOW_ID:0:7}
+            fi
+      - destroy_environment:
+        id: ${CIRCLE_WORKFLOW_ID:0:7}
+        when: on_fail
 
 #  deploy-frontend:
 
@@ -388,24 +362,24 @@ workflows:
   default:
     jobs:
       ## BUILD AND DEPLOY
-      # - install-backend-dependencies
+      - install-backend-dependencies
       # - install-frontend-dependencies
 
-      # - build-backend:
-      #     requires:
-      #       - install-backend-dependencies
+      - build-backend:
+          requires:
+            - install-backend-dependencies
       # - build-frontend:
       #     requires:
       #       - install-frontend-dependencies
-      # - test-backend:
-      #     requires:
-      #       -  build-backend
+      - test-backend:
+          requires:
+            - build-backend
       # - test-frontend:
       #     requires:
       #       -  build-frontend
-      # - scan-backend:
-      #     requires:
-      #       - build-backend
+      - scan-backend:
+          requires:
+            - build-backend
       # - scan-frontend:
       #     requires:
       #       - build-frontend
@@ -419,6 +393,15 @@ workflows:
       - configure-infrastructure:
           requires:
             - deploy-infrastructure
+      - run-migrations:
+          requires:
+            - test-backend
+            - scan-backend
+            - configure-infrastructure
+          filters:
+            branches:
+              only:
+                - master
 
       # - create_and_deploy_front_end
       # - get_last_deployment_id:

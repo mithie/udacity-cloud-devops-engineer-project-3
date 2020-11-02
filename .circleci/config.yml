@@ -52,10 +52,10 @@ jobs:
           name: npm install
           working_directory: ./backend
           command: ls -la && npm install
-      - save_cache:
+      - persist_to_workspace:
+          root: .
           paths:
             - backend/node_modules
-          key: backend-deps
 
 
   install-frontend-dependencies:
@@ -66,34 +66,34 @@ jobs:
           name: npm install
           working_directory: ./frontend
           command: ls -la && npm install
-      - save_cache:
+      - persist_to_workspace:
+          root: .
           paths:
             - frontend/node_modules
-          key: frontend-dependencies
 
 
   build-backend:
     executor: node
     steps:
       - checkout
-      - restore_cache:
-          key: backend-deps
+      - attach_workspace:
+          at: .
       - run:
           name: npm run build
           working_directory: ./backend
           command: npm run build
-      - save_cache:
+      - persist_to_workspace:
+          root: .
           paths:
             - backend/dist
-          key: backend-dist-dependencies
 
 
   build-frontend:
     executor: node
     steps:
       - checkout
-      - restore_cache:
-          key: frontend-dependencies
+      - attach_workspace:
+          at: .
       - run:
           name: npm run build
           working_directory: ./frontend
@@ -104,8 +104,8 @@ jobs:
     executor: node
     steps:
       - checkout
-      - restore_cache:
-          key: frontend-dependencies
+      - attach_workspace:
+          at: .
       - run:
           name: Install junit coverage reporter
           working_directory: ./frontend
@@ -126,8 +126,8 @@ jobs:
     executor: node
     steps:
       - checkout
-      - restore_cache:
-          key: backend-deps
+      - attach_workspace:
+          at: .
       - run:
           name: Install junit coverage reporter
           working_directory: ./backend
@@ -148,8 +148,8 @@ jobs:
     executor: node
     steps:
       - checkout
-      - restore_cache:
-          key: frontend-dependencies
+      - attach_workspace:
+          at: .
       - run:
           name: Check Frontend against security vulnerabilities
           working_directory: ./frontend
@@ -160,8 +160,8 @@ jobs:
     executor: node
     steps:
       - checkout
-      - restore_cache:
-          key: backend-dependencies
+      - attach_workspace:
+          at: .
       - run:
           name: Check Backend against security vulnerabilities
           working_directory: ./backend
@@ -250,8 +250,15 @@ jobs:
     executor: node
     steps:
       - checkout
-      - restore_cache:
-          key: backend-dist-dependencies
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install AWS CLI dependencies
+          working_directory: /tmp
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Run migrations
           command: |

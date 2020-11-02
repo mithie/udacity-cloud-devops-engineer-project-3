@@ -178,7 +178,7 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople-backend
       - run:
-          name: Save backend IP in memstash
+          name: Save backend URL in memstash
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
@@ -204,7 +204,6 @@ jobs:
               --filters "Name=tag:project,Values=udapeople-backend" \
               --output text >> inventory
             cat inventory
-            return 1
       - persist_to_workspace:
           root: .
           paths:

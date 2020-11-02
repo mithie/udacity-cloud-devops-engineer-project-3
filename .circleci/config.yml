@@ -21,15 +21,8 @@ commands:
       - run:
           name: Destroy udapeople frontend cfn stack and S3 bucket
           command: |
-            aws s3 ls << parameters.id >> > /dev/null 2>&1
-            echo $?
-            if [[ "$?" != "0" ]]
-            then
-              aws s3 rm s3://<< parameters.id >> --recursive
-              aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
-            else
-              return 0
-            fi
+            aws s3 rm s3://<< parameters.id >> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
           environment:
               TERM: xterm-256color
           when: << parameters.when >>
@@ -193,8 +186,6 @@ jobs:
               --output text)
 
             curl -H "Content-Type: text/plain" -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request PUT --data "http://$BACKEND_IP:3030" https://api.memstash.io/values/BACKEND_IP
-
-            return 1
       - run:
           name: Deploy frontend infrastructure
           working_directory: ./.circleci/files
@@ -213,6 +204,7 @@ jobs:
               --filters "Name=tag:project,Values=udapeople-backend" \
               --output text >> inventory
             cat inventory
+            return 1
       - persist_to_workspace:
           root: .
           paths:

@@ -349,8 +349,6 @@ jobs:
   smoke-test:
     executor: python
     steps:
-      - run: apk add --update curl
-    steps:
       - run:
           name: Install dependencies
           working_directory: /tmp

@@ -65,3 +65,4 @@ Before you submit your project, please check your work against the project rubri
 [SCREENSHOT04]: screenshot04.png
 [SCREENSHOT05]: screenshot05.png
 [SCREENSHOT06]: screenshot06.png
+[SCREENSHOT07]: screenshot07.png

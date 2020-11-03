@@ -309,14 +309,15 @@ jobs:
           name: Deploy frontend objects to S3
           working_directory: ./frontend
           command: |
-            aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            #aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            aws s3 cp ./dist "s3://udapeople-950c1c4" --recursive
       - persist_to_workspace:
           root: .
           paths:
             - frontend/dist
-      - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      #- destroy_environment:
+      #    id: ${CIRCLE_WORKFLOW_ID:0:7}
+      #    when: on_fail
 
 
   deploy-backend:
@@ -331,7 +332,7 @@ jobs:
           name: Install dependencies
           working_directory: /tmp
           command: |
-            apk add --update ansible
+            apk add --update ansible curl rsync openssh nodejs npm
             ansible --version
             pip install awscli
             aws --version
@@ -341,9 +342,9 @@ jobs:
           command: |
             cat inventory
             ansible-playbook -i inventory deploy-server.yaml
-      - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      #- destroy_environment:
+      #    id: ${CIRCLE_WORKFLOW_ID:0:7}
+      #    when: on_fail
 
 
   smoke_test:

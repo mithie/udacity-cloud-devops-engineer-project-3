@@ -314,9 +314,9 @@ jobs:
           root: .
           paths:
             - frontend/dist
-#      - destroy_environment:
-#          id: ${CIRCLE_WORKFLOW_ID:0:7}
-#          when: on_fail
+      - destroy_environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
 
   deploy-backend:
@@ -341,9 +341,9 @@ jobs:
           command: |
             cat inventory
             ansible-playbook -i inventory deploy-server.yaml -vv
-#      - destroy_environment:
-#          id: ${CIRCLE_WORKFLOW_ID:0:7}
-#          when: on_fail
+      - destroy_environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
 
   smoke-test:
@@ -366,24 +366,9 @@ jobs:
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com/index.html"
             curl -s ${URL} | grep -q "Welcome"
-    #  - destroy_environment:
-    #      id: ${CIRCLE_WORKFLOW_ID:0:7}
-    #      when: on_fail
-
-  # smoke_test:
-  #   executor: python
-  #   steps:
-  #     - run: apk add --update curl
-  #     - run:
-  #         name: smoke test.
-  #         command: |
-  #           URL="https://google.com/"
-  #           if curl -s --head ${URL} # test if google.com exists
-  #           then
-  #             return 0
-  #           else
-  #             return 1
-  #           fi
+      - destroy_environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
 #  cloudfront-update:
 
@@ -506,6 +491,10 @@ workflows:
       - deploy-frontend:
           requires:
             - run-migrations
+      - smoke-test:
+          requires:
+            - deploy-backend
+            - deploy-frontend
 
       # - create_and_deploy_front_end
       # - get_last_deployment_id:

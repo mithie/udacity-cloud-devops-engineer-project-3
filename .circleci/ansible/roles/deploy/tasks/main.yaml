@@ -38,7 +38,3 @@
      TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
      TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
 
-
-  - name: "print error log"
-    become: true
-    shell: cat ~/.pm2/logs/main-error.log |grep "Error"

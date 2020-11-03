@@ -309,15 +309,14 @@ jobs:
           name: Deploy frontend objects to S3
           working_directory: ./frontend
           command: |
-            #aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-            aws s3 cp ./dist "s3://udapeople-950c1c4" --recursive
+            aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       - persist_to_workspace:
           root: .
           paths:
             - frontend/dist
-      #- destroy_environment:
-      #    id: ${CIRCLE_WORKFLOW_ID:0:7}
-      #    when: on_fail
+#      - destroy_environment:
+#          id: ${CIRCLE_WORKFLOW_ID:0:7}
+#          when: on_fail
 
 
   deploy-backend:
@@ -341,26 +340,52 @@ jobs:
           working_directory: ./.circleci/ansible
           command: |
             cat inventory
-            ansible-playbook -i inventory deploy-server.yaml
-      #- destroy_environment:
-      #    id: ${CIRCLE_WORKFLOW_ID:0:7}
-      #    when: on_fail
+            ansible-playbook -i inventory deploy-server.yaml -vv
+#      - destroy_environment:
+#          id: ${CIRCLE_WORKFLOW_ID:0:7}
+#          when: on_fail
 
 
-  smoke_test:
+  smoke-test:
     executor: python
     steps:
       - run: apk add --update curl
+    steps:
       - run:
-          name: smoke test.
+          name: Install dependencies
+          working_directory: /tmp
           command: |
-            URL="https://google.com/"
-            if curl -s --head ${URL} # test if google.com exists
-            then
-              return 0
-            else
-              return 1
-            fi
+            apk add --update curl
+            pip install awscli
+            aws --version
+      - run:
+          name: Backend smoke test.
+          command: |
+            export BACKEND_URL=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
+            curl "$BACKEND_URL/api/status"
+      - run:
+          name: Frontend smoke test.
+          command: |
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com/index.html"
+            curl -s ${URL} | grep -q "Welcome"
+    #  - destroy_environment:
+    #      id: ${CIRCLE_WORKFLOW_ID:0:7}
+    #      when: on_fail
+
+  # smoke_test:
+  #   executor: python
+  #   steps:
+  #     - run: apk add --update curl
+  #     - run:
+  #         name: smoke test.
+  #         command: |
+  #           URL="https://google.com/"
+  #           if curl -s --head ${URL} # test if google.com exists
+  #           then
+  #             return 0
+  #           else
+  #             return 1
+  #           fi
 
 #  cloudfront-update:
 

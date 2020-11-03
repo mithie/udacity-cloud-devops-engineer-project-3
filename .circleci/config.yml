@@ -1,10 +1,8 @@
 version: 2.1
 
-### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
-
 commands:
   destroy_environment:
-    description: Destroy Cloud Formation Stacks in case of errors during infrastructure setup
+    description: Destroy Cloud Formation Stacks and infrastructure
     parameters:
       when:
         type: string
@@ -27,9 +25,23 @@ commands:
               TERM: xterm-256color
           when: << parameters.when >>
 
-#   revert-migration:
-#     description: Revert the last migration if successfully run in the current workflow.
-#     ...
+  revert_migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      when:
+        type: string
+      id:
+        type: string
+    steps:
+      - run:
+          name: Revert migrations
+          command: |
+            SUCCESS=$(curl -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request GET https://api.memstash.io/values/DB_MIGRATION_<< parameters.id >>)
+            if [[ "$SUCCESS" == "success" ]]
+            then
+              npm run migrations:revert
+            fi
+          when: << parameters.when >>
 
 executors:
   node:
@@ -317,6 +329,9 @@ jobs:
       - destroy_environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
+      - revert_migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
 
   deploy-backend:
@@ -344,6 +359,9 @@ jobs:
       - destroy_environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
+      - revert_migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
 
   smoke-test:
@@ -353,7 +371,7 @@ jobs:
           name: Install dependencies
           working_directory: /tmp
           command: |
-            apk add --update curl
+            apk add --update curl nodejs npm
             pip install awscli
             aws --version
       - run:
@@ -364,9 +382,13 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
+            #URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com/index.html" #this will cause a rollback since the s3 url is wrong
             curl -s ${URL} | grep -q "Welcome"
       - destroy_environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
+      - revert_migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 

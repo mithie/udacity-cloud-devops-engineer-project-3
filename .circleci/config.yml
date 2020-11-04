@@ -63,7 +63,7 @@ jobs:
       - run:
           name: npm install
           working_directory: ./backend
-          command: ls -la && npm install
+          command: ls -la && npm install && npm update
       - persist_to_workspace:
           root: .
           paths:

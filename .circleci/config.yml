@@ -34,7 +34,8 @@ commands:
         type: string
     steps:
       - run:
-          name: Revert migrations
+          name: Revert migration_status
+          working_directory: ./backend
           command: |
             SUCCESS=$(curl -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request GET https://api.memstash.io/values/DB_MIGRATION_<< parameters.id >>)
             echo $SUCCESS
@@ -381,12 +382,16 @@ jobs:
           name: Backend smoke test.
           working_directory: ./backend
           command: |
+            pwd
+            ls -la
             export BACKEND_URL=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
             curl "$BACKEND_URL/api/status"
       - run:
           name: Frontend smoke test.
           working_directory: ./backend
           command: |
+            pwd
+            ls -la
             #URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com/index.html" #this will cause a rollback since the s3 url is wrong
             curl -s ${URL} | grep -q "Welcome"

@@ -33,13 +33,18 @@ commands:
       id:
         type: string
     steps:
+      - attach_workspace:
+          at: .
       - run:
           name: Revert migrations
           working_directory: ./backend
           command: |
             SUCCESS=$(curl -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request GET https://api.memstash.io/values/DB_MIGRATION_<< parameters.id >>)
+            echo $SUCCESS
             if [[ "$SUCCESS" == "success" ]]
             then
+              pwd
+              ls -la
               npm run migrations:revert
             fi
           when: << parameters.when >>

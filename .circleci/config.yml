@@ -1,5 +1,18 @@
 version: 2.1
 
+
+executors:
+  node:
+    docker:
+      - image: circleci/node:13.8.0
+  python:
+    docker:
+      - image: python:3.9.0-alpine
+  aws:
+    docker:
+      - image: amazon/aws-cli
+
+
 commands:
   destroy_environment:
     description: Destroy Cloud Formation Stacks and infrastructure
@@ -33,9 +46,6 @@ commands:
       id:
         type: string
     steps:
-      - checkout
-      - attach_workspace:
-          at: .
       - run:
           name: Revert migrations
           working_directory: ./backend
@@ -49,18 +59,6 @@ commands:
               npm run migrations:revert
             fi
           when: << parameters.when >>
-
-
-executors:
-  node:
-    docker:
-      - image: circleci/node:13.8.0
-  python:
-    docker:
-      - image: python:3.9.0-alpine
-  aws:
-    docker:
-      - image: amazon/aws-cli
 
 jobs:
 
@@ -375,9 +373,9 @@ jobs:
   smoke-test:
     executor: python
     steps:
-      # - checkout
-      # - attach_workspace:
-      #   at: .
+      - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Install dependencies
           working_directory: /tmp
@@ -386,7 +384,7 @@ jobs:
             pip install awscli
       - run:
           name: Backend smoke test.
-          #working_directory: ./backend
+          working_directory: ./backend
           command: |
             pwd
             ls -la
@@ -394,7 +392,7 @@ jobs:
             curl "$BACKEND_URL/api/status"
       - run:
           name: Frontend smoke test.
-          #working_directory: ./backend
+          working_directory: ./backend
           command: |
             pwd
             ls -la

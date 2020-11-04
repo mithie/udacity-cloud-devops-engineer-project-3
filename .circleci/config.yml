@@ -33,8 +33,11 @@ commands:
       id:
         type: string
     steps:
+      - checkout
+      - attach_workspace:
+          at: .
       - run:
-          name: Revert migration_status
+          name: Revert migrations
           working_directory: ./backend
           command: |
             SUCCESS=$(curl -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request GET https://api.memstash.io/values/DB_MIGRATION_<< parameters.id >>)
@@ -372,7 +375,9 @@ jobs:
   smoke-test:
     executor: python
     steps:
-      - checkout
+      # - checkout
+      # - attach_workspace:
+      #   at: .
       - run:
           name: Install dependencies
           working_directory: /tmp
@@ -381,7 +386,7 @@ jobs:
             pip install awscli
       - run:
           name: Backend smoke test.
-          working_directory: ./backend
+          #working_directory: ./backend
           command: |
             pwd
             ls -la
@@ -389,7 +394,7 @@ jobs:
             curl "$BACKEND_URL/api/status"
       - run:
           name: Frontend smoke test.
-          working_directory: ./backend
+          #working_directory: ./backend
           command: |
             pwd
             ls -la

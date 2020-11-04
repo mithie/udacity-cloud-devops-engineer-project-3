@@ -376,11 +376,13 @@ jobs:
             aws --version
       - run:
           name: Backend smoke test.
+          working_directory: ./backend
           command: |
             export BACKEND_URL=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
             curl "$BACKEND_URL/api/status"
       - run:
           name: Frontend smoke test.
+          working_directory: ./frontend
           command: |
             #URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com/index.html" #this will cause a rollback since the s3 url is wrong

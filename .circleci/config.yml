@@ -33,11 +33,8 @@ commands:
       id:
         type: string
     steps:
-      - attach_workspace:
-          at: .
       - run:
           name: Revert migrations
-          working_directory: ./backend
           command: |
             SUCCESS=$(curl -H "token: 2a9e15d6-b9fa-4b1f-a5dc-e3b9643a9b63" --request GET https://api.memstash.io/values/DB_MIGRATION_<< parameters.id >>)
             echo $SUCCESS
@@ -48,6 +45,7 @@ commands:
               npm run migrations:revert
             fi
           when: << parameters.when >>
+
 
 executors:
   node:
@@ -379,7 +377,6 @@ jobs:
           command: |
             apk add --update curl nodejs npm
             pip install awscli
-            aws --version
       - run:
           name: Backend smoke test.
           working_directory: ./backend
@@ -388,7 +385,7 @@ jobs:
             curl "$BACKEND_URL/api/status"
       - run:
           name: Frontend smoke test.
-          working_directory: ./frontend
+          working_directory: ./backend
           command: |
             #URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-eu-central-1.amazonaws.com/index.html" #this will cause a rollback since the s3 url is wrong

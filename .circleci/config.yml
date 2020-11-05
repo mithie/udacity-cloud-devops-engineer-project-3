@@ -422,8 +422,8 @@ jobs:
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - revert_migrations:
-        id: ${CIRCLE_WORKFLOW_ID:0:7}
-        when: on_fail
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
 
 

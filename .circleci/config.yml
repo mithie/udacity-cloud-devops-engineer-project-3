@@ -410,10 +410,10 @@ jobs:
           name: Install dependencies
           command: |
             yum install -y tar gzip curl
-            curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
             yum install -y nodejs
       - run:
-          name: Update frontend production environment
+          name: Update cloudfront distribution
           working_directory: ./.circleci/files
           command: |
             aws cloudformation deploy \

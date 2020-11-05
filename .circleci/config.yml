@@ -67,7 +67,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: npm install
+          name: npm install - feature test
           working_directory: ./backend
           command: ls -la && npm install
       - persist_to_workspace:
@@ -81,7 +81,7 @@ jobs:
    steps:
       - checkout
       - run:
-          name: npm install
+          name: npm install - feature test
           working_directory: ./frontend
           command: ls -la && npm install
       - persist_to_workspace:

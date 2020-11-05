@@ -413,6 +413,14 @@ jobs:
             curl -sL https://rpm.nodesource.com/setup_10.x | bash -
             yum install -y nodejs
       - run:
+          name: Store old WorkflowID in memstash for cleanup phase
+          working_directory: ./.circleci/files
+          command: |
+            WorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text)
+            curl -H "Content-Type: text/plain" -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request PUT --data "$WorkflowID" https://api.memstash.io/values/WorkflowID
+      - run:
           name: Update cloudfront distribution
           working_directory: ./.circleci/files
           command: |
@@ -426,76 +434,29 @@ jobs:
           when: on_fail
 
 
-
-
-
-
-  create_and_deploy_front_end:
-    executor: aws
-    steps:
-      - checkout
-      - run:
-          name: Create and deploy S3 frontend
-          working_directory: ./.circleci/files
-          command: |
-            aws cloudformation deploy \
-            --template-file bucket.yaml \
-            --stack-name "udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --parameter-overrides PipelineID="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run:
-          name: Upload new Website Content
-          working_directory: ./.circleci/files/website-content
-          command: |
-            aws s3 sync . s3://"${CIRCLE_WORKFLOW_ID:0:7}"
-
-  get_last_deployment_id:
-    executor: aws
-    steps:
-      - checkout
-      - run:
-          name: Retrieve latest PipelineID from cloud formation and store it in memstash for later use
-          working_directory: ./.circleci/files
-          command: |
-            PipelineID=$(aws cloudformation \
-            list-exports --query "Exports[?Name==\`PipelineID\`].Value" \
-            --no-paginate --output text)
-            curl -H "Content-Type: text/plain" -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request PUT --data "$PipelineID" https://api.memstash.io/values/PipelineID
-
-  promote_to_production:
-    executor: aws
-    steps:
-      - checkout
-      - run:
-          name: Update frontend production environment
-          working_directory: ./.circleci/files
-          command: |
-            aws cloudformation deploy \
-            --template-file cloudfront.yaml \
-            --stack-name udapeople-cloudfront-production \
-            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
-            --tags project=udapeople
-
-  clean_up_old_front_end:
+  cleanup:
     executor: aws
     steps:
       - checkout
       - run:
           name: Clean up old environment
           command: |
-            OldPipelineID=$(curl -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request GET https://api.memstash.io/values/PipelineID)
-            CurrentPipelineID=${CIRCLE_WORKFLOW_ID:0:7}
+            OldWorkflowID=$(curl -H "token: 1513db3b-15be-4750-bae6-3a8d32dd6de2" --request GET https://api.memstash.io/values/WorkflowID)
+            CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
 
-            if [[ "$CurrentPipelineID" != "$OldPipelineID" ]]
+            if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
             then
-              echo "$OldPipelineID!=$CurrentPipelineID => will delete old version"
+              echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
 
-              aws s3 rm "s3://${OldPipelineID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-${OldPipelineID}"
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
             else
-              echo "$OldPipelineID==$CurrentPipelineID => nothing to be done..."
+              echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."
             fi
-          environment:
-            TERM: xterm-256color
+        environment:
+          TERM: xterm-256color
+
 
 workflows:
   default:
@@ -556,14 +517,6 @@ workflows:
       - cloudfront-update:
           requires:
             - smoke-test
-
-      # - create_and_deploy_front_end
-      # - get_last_deployment_id:
-      #     requires:
-      #       - create_and_deploy_front_end
-      # - promote_to_production:
-      #     requires:
-      #       - get_last_deployment_id
-      # - clean_up_old_front_end:
-      #     requires:
-      #       - promote_to_production
+      - cleanup:
+          requires:
+            - cloudfront-update

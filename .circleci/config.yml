@@ -454,8 +454,8 @@ jobs:
             else
               echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."
             fi
-        environment:
-          TERM: xterm-256color
+          environment:
+            TERM: xterm-256color
 
 
 workflows:
